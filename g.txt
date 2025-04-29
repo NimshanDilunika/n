@@ -1,0 +1,624 @@
+composer global require laravel/installer 
+laravel new	new-app
+partisan make:model Abc -crm
+php artisan migrate
+php artisan serve
+
+
+Route::resource('paper',PaperController::class);
+Route::post('paper',[PaperController::class,'store'])->name('paper.store');
+Route::put('paper/{paper}',[PaperController::class,'update'])->name('paper.update');
+Route::get('paper/{paper}',[PaperController::class,'show'])->name('paper.show');
+Route::get('/', [PostController::class, 'index']);
+Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
+Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\paper;
+use Illuminate\Http\Request;
+
+class PaperController extends Controller
+{
+    public function index()
+    {
+        $papers=Paper::get();
+         return view('paper.index',[
+            'papers'=>$papers
+         ]);
+    }
+    public function create()
+    {
+        return view('paper.create');
+    }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name'=>'required|max : 255',
+            'page'=> 'required|max : 255',
+        ]);
+        Paper::create([
+
+            'name'=> $request->name,
+            'page'=> $request->page,
+        ]);
+        return redirect('/paper')->with('message','paper store sucessfully');
+    }
+
+    public function show(paper $paper)
+    {
+        return view('paper.show',compact('paper'));
+    }
+
+    public function edit(paper $paper)
+    {
+        return view('paper.edit',compact('paper'));
+    }
+
+    public function update(Request $request, paper $paper)
+    {
+        $request->validate([
+            'name'=>'required|max : 255',
+            'page'=> 'required|max : 255',
+        ]);
+
+        $paper->update([
+
+            'name'=> $request->name,
+            'page'=> $request->page,
+
+        ]);
+        return redirect('/paper')->with('message','paper update sucessfully');
+    }
+
+    public function destroy(paper $paper)
+    {
+        $paper->delete();
+        return redirect('/paper')->with('message','paper delete sucessfully');
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void liangBarsky(int x0, int y0, int x1, int y1)
+{
+	float t0 = 0.0;
+	float t1 = 1.0;
+	float dx = x1 - x0;
+	float dy = y1 - y0;
+	float p, q, r;
+
+	for(int edge = 0; edge < 4; edge++)
+	{
+		if(edge == 0)
+		{
+			p = -dx;
+			q = x0 - xmin;
+		}
+		else if(edge == 1)
+		{
+			p = dx;
+			q = xmax - x0;
+		}
+		else if(edge == 2)
+		{
+			p = -dy;
+			q = y0 - ymin;
+		}
+		else
+		{
+			p = dy;
+			q = ymax - y0;
+		}
+
+		r = p / q;
+		
+		if(p == 0 && q < 0)
+			continue;
+
+		if(p < 0)
+		{
+			if(r > t1)
+				continue;
+			else if(r > t0)
+				t0 = r;
+		}
+		else if(p > 0)
+		{
+			if(r < t0)
+				continue;
+			else if(r < t1)
+				t1 = r;
+		}
+	}
+
+	float x_clipped = x0 + t0 * dx;
+	float y_clipped = y0 + t0 * dy;
+	float x_clipped_end = x0 + t1 * dx;
+	float y_clipped_end = y0 + t1 * dy;
+
+	glColor3f(1.0, 0.0, 0.0);
+	bresenhamAlg ( (int)x_clipped,  (int)y_clipped, (int)x_clipped_end,  (int)y_clipped_end);
+}
+
+
+int computeOutCode(int x, int y) {
+    int code = INSIDE;
+
+    if (x < xmin)
+        code |= LEFT; //code = code | LEFT; bitwise OR assignment operator
+    else if (x > xmax)
+        code |= RIGHT;
+    if (y < ymin)
+        code |= BOTTOM;
+    else if (y > ymax)
+        code |= TOP;
+
+    return code;
+}
+// Function to clip a line using Cohen-Sutherland algorithm
+void cohenSutherland(int x0, int y0, int x1, int y1) {
+    int outcode0, outcode1, outcode;
+    bool accept = false, done = false;
+
+    outcode0 = computeOutCode(x0, y0);
+    outcode1 = computeOutCode(x1, y1);
+
+    do {
+        if (!(outcode0 | outcode1)) { // Trivially accepted
+            accept = true;
+            done = true;
+        } else if (outcode0 & outcode1) { // Trivially rejected
+            done = true;
+        } else {
+            float x, y;
+            outcode = outcode0 ? outcode0 : outcode1;
+
+            if (outcode & TOP) {
+                x = x0 + (x1 - x0) * (ymax - y0) / (y1 - y0);
+                y = ymax;
+            } else if (outcode & BOTTOM) {
+                x = x0 + (x1 - x0) * (ymin - y0) / (y1 - y0);
+                y = ymin;
+            } else if (outcode & RIGHT) {
+                y = y0 + (y1 - y0) * (xmax - x0) / (x1 - x0);
+                x = xmax;
+            } else if (outcode & LEFT) {
+                y = y0 + (y1 - y0) * (xmin - x0) / (x1 - x0);
+                x = xmin;
+            }
+
+            if (outcode == outcode0) {
+                x0 = x;
+                y0 = y;
+                outcode0 = computeOutCode(x0, y0);
+            } else {
+                x1 = x;
+                y1 = y;
+                outcode1 = computeOutCode(x1, y1);
+            }
+        }
+    } while (!done);
+
+    if (accept) {
+        glColor3f(1.0, 0.0, 0.0);
+		bresenhamAlg ( x0,  y0,  x1,  y1);
+    }
+}
+
+void bresenhamAlg (int x0, int y0, int x1, int y1)  
+{  
+  int dx = abs (x1 - x0);  
+  int dy = abs (y1 - y0);  
+  int x, y;  
+  if (dx >= dy)  
+  {  
+   int d = 2*dy-dx;  
+   int ds = 2*dy;  
+   int dt = 2*(dy-dx);  
+       if (x0 < x1)   
+       {  
+            x = x0;  
+            y = y0;  
+        }  
+        else  
+        {   
+            x = x1;  
+            y = y1;  
+            x1 = x0;  
+            y1 = y0;  
+        }  
+  putPixel (x, y);  
+  while (x < x1)  
+  {  
+    if (d < 0)  
+        d += ds;  
+        else {  
+             if (y < y1) {  
+               y++;  
+               d += dt;  
+				}   
+             else {  
+				y--;  
+				d += dt;             
+			 }  
+		}  
+        x++;  
+		putPixel (x, y);  
+    }  
+}  
+       else {   
+           int d = 2*dx-dy;  
+             int ds = 2*dx;  
+             int dt = 2*(dx-dy);  
+             if (y0 < y1) 
+			 {  
+				 x = x0;  
+				 y = y0;  
+             }  
+             else 
+			 {   
+				 x = x1;  
+				 y = y1;  
+				 y1 = y0;  
+				x1 = x0;  
+             }  
+            putPixel (x, y);   
+        while (y < y1)  
+        {  
+              if (d < 0)  
+                 d += ds;  
+             else {  
+                   if (x < x1)
+				   {  
+						x++;  
+						d += dt;  
+					} else 
+					{  
+						x--;  
+						d += dt;  
+					}                
+				}  
+			y++;  
+             putPixel (x, y);
+			 
+       }        
+	}  
+}  
+
+void DDALine(int x0, int y0, int x1, int y1)  
+{  
+    int dx = x1 - x0;
+	int dy = y1 - y0;
+
+	int steps;
+	if(abs(dx)>abs(dy))
+		steps = abs(dx);
+	else
+		steps = abs(dy);
+
+    float xincrement = dx / (float)steps;  
+    float yincrement = dy / (float)steps;  
+
+    float x = x0, y = y0; 
+
+    for (int k = 0; k <= steps; k++)  
+    {  
+        PutPixel((int)x, (int)y);
+        x = x + xincrement;  
+        y = y + yincrement;  
+    }  
+}  
+
+void bresenhamCircle(int h, int k, int r)
+{	// h - center x coordinate, k - center y coordinate
+	int x=0, y=r, d= 3-2*r;
+	while(x <= y)
+	{
+		plotCircle(h, k, x, y);
+		if(d<0)
+		{
+			d = d + 4*x + 6; 
+		}
+		else
+		{
+			d = d + 4*(x-y) + 10;
+			y--;
+		}
+		x++;
+	}
+}
+void MidPointCircle(int h, int k, int r)
+{
+    int x = 0, y = r;
+    int d = 1-r;
+    while (x <= y)
+    {
+        plotCircle(h, k, x, y);
+        if (d < 0)
+            d += 2 * x + 3; 
+        else
+        {
+            d += 2 * (x - y) + 5;
+            y--;
+        }
+        x++;
+    }
+}
+
+void floodFill4(int x, int y,struct Color fill_colour, struct Color old_colour) 
+{ 
+	struct 	Color color;
+	color=getPixelColor(x,y);
+
+	if(color.r==old_colour.r && color.g==old_colour.g && color.b==old_colour.b)
+	{
+		setPixelColor(x, y, fill_colour);
+		floodFill4(x+1, y, fill_colour, old_colour);
+		floodFill4(x, y+1, fill_colour, old_colour);
+		floodFill4(x-1, y, fill_colour, old_colour);
+		floodFill4(x, y-1, fill_colour, old_colour);
+	}
+} 
+
+bool isDifferentColor(struct Color one, struct Color two)
+{
+	return !(one.r == two.r && one.b == two.b && one.g == two.g);
+}
+
+void boundaryFill4(int x, int y,struct Color fill_colour, struct Color boderColour)
+{
+	struct 	Color color;
+	color=getPixelColor(x,y);
+
+	if((isDifferentColor(color, boderColour)) && (isDifferentColor(color, fill_colour)))
+	{
+		setPixelColor(x, y, fill_colour);
+		boundaryFill4(x+1, y, fill_colour, boderColour);
+		boundaryFill4(x, y+1, fill_colour, boderColour);
+		boundaryFill4(x-1, y, fill_colour, boderColour);
+		boundaryFill4(x, y-1, fill_colour, boderColour);
+	}
+}
+
+#include <glut.h>
+#include <math.h>
+#include <stdio.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+int ww = 800, wh = 800;
+int xi = -1, yi = -1, xf, yf, r;
+float gin = 0.0, bin = 0.1;
+float gout = 0.1, bout = 0.0;
+
+void putPixel(int x, int y)
+{
+    double distance = sqrt((double)((x - xi) * (x - xi) + (y - yi) * (y - yi)));
+
+    if (distance < r)
+        glColor3f(0.0, gin, bin);      // Inside circle
+    else if (distance > r)
+        glColor3f(0.0, gout, bout);    // Outside circle
+    else
+        glColor3f(1.0, 0.0, 0.0);      // On the circle (optional)
+
+    glBegin(GL_POINTS);
+    glVertex2i(x, y);
+    glEnd();
+}
+
+void plotCircle(int h, int k, int x, int y)
+{
+    putPixel(h + x, k + y);
+    putPixel(h + y, k + x);
+    putPixel(h - y, k + x);
+    putPixel(h - x, k + y);
+    putPixel(h - x, k - y);
+    putPixel(h - y, k - x);
+    putPixel(h + y, k - x);
+    putPixel(h + x, k - y);
+}
+
+
+
+
+void DrawDiagram()
+{
+    if (r <= 0) return;
+
+    int Vertices[6][2];
+    double angle = M_PI / 3.0;
+
+    for (int i = 0; i < 6; i++)
+    {
+        Vertices[i][0] = xi + (int)(r * cos(i * angle));
+        Vertices[i][1] = yi + (int)(r * sin(i * angle));
+    }
+
+    for (int i = 0; i < 6; i++)
+        bresenhamAlg(Vertices[i][0], Vertices[i][1], Vertices[(i + 1) % 6][0], Vertices[(i + 1) % 6][1]);
+
+    for (int i = 0; i < 6; i++)
+        midpointCircle(Vertices[i][0], Vertices[i][1], r);
+}
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    DrawDiagram();
+    glFlush();
+}
+
+void mouse(int btn, int state, int x, int y)
+{
+    if (btn == GLUT_LEFT_BUTTON )
+    {	if(state == GLUT_DOWN)
+		{
+			xi = x;
+			yi = wh - y;
+	
+     	}
+        else if( state == GLUT_UP)
+		{
+			xf = x;
+			yf = wh - y;
+			r = (int)sqrt((double)((xi - xf) * (xi - xf) + (yi - yf) * (yi - yf)));
+
+			// Set colors
+			gin = 1.0;
+			bin = 0.0;
+			gout = 0.0;
+			bout = 1.0;
+
+			glutPostRedisplay();
+		}
+    }
+    if (btn == GLUT_RIGHT_BUTTON )
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+        gin = 0.0;
+        bin = 1.0;
+        gout = 1.0;
+        bout = 0.0;
+     
+        glutPostRedisplay();
+    }
+}
+
+void myinit()
+{
+    glViewport(0, 0, ww, wh);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0.0, (GLdouble)ww, 0.0, (GLdouble)wh);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(ww, wh);
+    glutCreateWindow("Flower Diagram");
+    myinit();
+    glutDisplayFunc(display);
+    glutMouseFunc(mouse);
+    glutMainLoop();
+    return 0;
+}
+
+composer global require laravel/installer 
+laravel new	new-app
+partisan make:model Abc -crm
+php artisan migrate
+php artisan serve
+
+
+Route::resource('paper',PaperController::class);
+Route::post('paper',[PaperController::class,'store'])->name('paper.store');
+Route::put('paper/{paper}',[PaperController::class,'update'])->name('paper.update');
+Route::get('paper/{paper}',[PaperController::class,'show'])->name('paper.show');
+Route::get('/', [PostController::class, 'index']);
+Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
+Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\paper;
+use Illuminate\Http\Request;
+
+class PaperController extends Controller
+{
+    public function index()
+    {
+        $papers=Paper::get();
+         return view('paper.index',[
+            'papers'=>$papers
+         ]);
+    }
+    public function create()
+    {
+        return view('paper.create');
+    }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name'=>'required|max : 255',
+            'page'=> 'required|max : 255',
+        ]);
+        Paper::create([
+
+            'name'=> $request->name,
+            'page'=> $request->page,
+        ]);
+        return redirect('/paper')->with('message','paper store sucessfully');
+    }
+
+    public function show(paper $paper)
+    {
+        return view('paper.show',compact('paper'));
+    }
+
+    public function edit(paper $paper)
+    {
+        return view('paper.edit',compact('paper'));
+    }
+
+    public function update(Request $request, paper $paper)
+    {
+        $request->validate([
+            'name'=>'required|max : 255',
+            'page'=> 'required|max : 255',
+        ]);
+
+        $paper->update([
+
+            'name'=> $request->name,
+            'page'=> $request->page,
+
+        ]);
+        return redirect('/paper')->with('message','paper update sucessfully');
+    }
+
+    public function destroy(paper $paper)
+    {
+        $paper->delete();
+        return redirect('/paper')->with('message','paper delete sucessfully');
+    }
+}
